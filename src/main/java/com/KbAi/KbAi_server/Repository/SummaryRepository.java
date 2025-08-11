@@ -46,4 +46,8 @@ public interface SummaryRepository extends JpaRepository<ConversationSummary, Lo
         Category getCategory();
         long getCnt();
     }
+
+    List<ConversationSummary> findTop3ByKeywordOrderByCreatedTimeDesc(
+            Keyword keyword
+    );
 }

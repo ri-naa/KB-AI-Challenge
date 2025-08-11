@@ -1,8 +1,10 @@
 package com.KbAi.KbAi_server.AdminBoard.Controller;
 
+import com.KbAi.KbAi_server.AdminBoard.Dto.MsgSummaryDto;
 import com.KbAi.KbAi_server.AdminBoard.Dto.Period;
 import com.KbAi.KbAi_server.AdminBoard.Service.BoardService;
 import com.KbAi.KbAi_server.Entity.Category;
+import com.KbAi.KbAi_server.Entity.Keyword;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,5 +35,13 @@ public class BoardController {
     public Map<String, Object> getCategoryDistribution() {
         var items = boardService.getCategoryDistribution();
         return Map.of("items", items);
+    }
+
+
+    @GetMapping("/summaries")
+    public MsgSummaryDto recentSummaries(
+            @RequestParam Keyword keyword
+    ) {
+        return boardService.getRecent3Summaries(keyword);
     }
 }

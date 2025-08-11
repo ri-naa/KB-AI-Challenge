@@ -2,8 +2,11 @@ package com.KbAi.KbAi_server.AdminBoard.Service;
 
 import com.KbAi.KbAi_server.AdminBoard.Dto.CategoryDistriDto;
 import com.KbAi.KbAi_server.AdminBoard.Dto.KeywordCountDto;
+import com.KbAi.KbAi_server.AdminBoard.Dto.MsgSummaryDto;
 import com.KbAi.KbAi_server.AdminBoard.Dto.Period;
 import com.KbAi.KbAi_server.Entity.Category;
+import com.KbAi.KbAi_server.Entity.ConversationSummary;
+import com.KbAi.KbAi_server.Entity.Keyword;
 import com.KbAi.KbAi_server.Repository.SummaryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -80,6 +83,22 @@ public class BoardService {
                         Math.round(p.getCnt() * 10000.0 / total) / 100.0
                 ))
                 .toList();
+    }
+
+
+    // 키워드 별 메세지 요약 최근 3개
+    public MsgSummaryDto getRecent3Summaries(Keyword keyword) {
+        var list = summaryRepository
+                .findTop3ByKeywordOrderByCreatedTimeDesc(keyword)
+                .stream()
+                .map(ConversationSummary::getSummaryMessage)
+                .toList();
+
+        return new MsgSummaryDto(
+                keyword,
+                keyword.getDescription(),
+                list
+        );
     }
 
 }
