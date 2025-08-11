@@ -19,14 +19,31 @@ public interface SummaryRepository extends JpaRepository<ConversationSummary, Lo
       group by s.keyword
       order by cnt desc
     """)
-    List<KeywordCountProjection> countByKeyword(
+    List<KeywordCount> countByKeyword(
             @Param("category") Category category,
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end
     );
 
-    interface KeywordCountProjection {
+    interface KeywordCount {
         Keyword getKeyword();
+        long getCnt();
+    }
+
+
+    @Query("""
+       select s.category as category, count(s) as cnt
+       from ConversationSummary s
+       where s.createdTime >= :start and s.createdTime < :end
+       group by s.category
+    """)
+    List<CategoryCount> countByCategory(
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end
+    );
+
+    interface CategoryCount {
+        Category getCategory();
         long getCnt();
     }
 }

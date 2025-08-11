@@ -1,5 +1,6 @@
 package com.KbAi.KbAi_server.AdminBoard.Service;
 
+import com.KbAi.KbAi_server.AdminBoard.Dto.CategoryDistriDto;
 import com.KbAi.KbAi_server.AdminBoard.Dto.KeywordCountDto;
 import com.KbAi.KbAi_server.AdminBoard.Dto.Period;
 import com.KbAi.KbAi_server.Entity.Category;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -18,6 +20,7 @@ public class BoardService {
     private final SummaryRepository summaryRepository;
     private static final ZoneId ZONE = ZoneId.of("Asia/Seoul");
 
+    // 카테고리, 기간 별 키워드 누적 구하기
     public List<KeywordCountDto> getKeywordCounts(Category category, Period period) {
         DateRange r = rangeOf(period);
         return mapToDto(summaryRepository.countByKeyword(category, r.start, r.end));
@@ -30,7 +33,7 @@ public class BoardService {
 
         return switch (p) {
             case WEEK -> {
-                LocalDate s = today.minusDays(6); // 오늘 포함 최근 7일
+                LocalDate s = today.minusDays(6);
                 yield new DateRange(s.atStartOfDay(), today.plusDays(1).atStartOfDay());
             }
             case MONTH -> {
@@ -38,19 +41,44 @@ public class BoardService {
                 LocalDate firstNext = first.plusMonths(1);
                 yield new DateRange(first.atStartOfDay(), firstNext.atStartOfDay());
             }
-            case YEAR -> { // 최근 1년
+            case YEAR -> {
                 LocalDate s = today.minusDays(364);
                 yield new DateRange(s.atStartOfDay(), today.plusDays(1).atStartOfDay());
             }
         };
     }
 
-    private List<KeywordCountDto> mapToDto(List<SummaryRepository.KeywordCountProjection> rows) {
+    private List<KeywordCountDto> mapToDto(List<SummaryRepository.KeywordCount> rows) {
         return rows.stream()
                 .map(p -> new KeywordCountDto(
                         p.getKeyword(),
                         p.getKeyword().getDescription(),
                         p.getCnt()))
+                .toList();
+    }
+
+
+    // 전체 카테고리 별 비율 구하기
+    public List<CategoryDistriDto> getCategoryDistribution() {
+        LocalDate today = LocalDate.now(ZONE);
+        LocalDateTime start = today.minusDays(6).atStartOfDay();
+        LocalDateTime end   = today.plusDays(1).atStartOfDay();
+
+        var rows = summaryRepository.countByCategory(start, end);
+        long total = Math.max(
+                rows.stream()
+                        .mapToLong(SummaryRepository.CategoryCount::getCnt)
+                        .sum(),
+                1
+        );
+
+        return rows.stream()
+                .sorted(Comparator.comparingLong(SummaryRepository.CategoryCount::getCnt).reversed())
+                .map(p -> new CategoryDistriDto(
+                        p.getCategory(),
+                        p.getCategory().getDescription(),
+                        Math.round(p.getCnt() * 10000.0 / total) / 100.0
+                ))
                 .toList();
     }
 

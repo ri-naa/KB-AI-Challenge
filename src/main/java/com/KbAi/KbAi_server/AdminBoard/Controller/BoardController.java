@@ -3,9 +3,7 @@ package com.KbAi.KbAi_server.AdminBoard.Controller;
 import com.KbAi.KbAi_server.AdminBoard.Dto.Period;
 import com.KbAi.KbAi_server.AdminBoard.Service.BoardService;
 import com.KbAi.KbAi_server.Entity.Category;
-import com.KbAi.KbAi_server.Entity.User;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -19,7 +17,6 @@ public class BoardController {
 
     @GetMapping("/keywords")
     public Map<String, Object> getCategoryResult(
-            @AuthenticationPrincipal User user,
             @RequestParam Category category,
             @RequestParam Period period
     ) {
@@ -30,5 +27,11 @@ public class BoardController {
                 "period", period.name(),
                 "items", items
         );
+    }
+
+    @GetMapping("/totalBoard")
+    public Map<String, Object> getCategoryDistribution() {
+        var items = boardService.getCategoryDistribution();
+        return Map.of("items", items);
     }
 }
