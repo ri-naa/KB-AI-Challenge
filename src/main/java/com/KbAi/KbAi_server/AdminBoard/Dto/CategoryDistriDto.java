@@ -7,6 +7,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class CategoryDistriDto {
+    private Period period;
     private Category category;
     private String description;
     private double ratio;
