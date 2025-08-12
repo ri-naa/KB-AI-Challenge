@@ -32,8 +32,10 @@ public class BoardController {
     }
 
     @GetMapping("/totalBoard")
-    public Map<String, Object> getCategoryDistribution() {
-        var items = boardService.getCategoryDistribution();
+    public Map<String, Object> getCategoryDistribution(
+            @RequestParam Period period
+    ) {
+        var items = boardService.getCategoryDistribution(period);
         return Map.of("items", items);
     }
 

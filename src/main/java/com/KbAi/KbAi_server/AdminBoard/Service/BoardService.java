@@ -62,22 +62,20 @@ public class BoardService {
 
 
     // 전체 카테고리 별 비율 구하기
-    public List<CategoryDistriDto> getCategoryDistribution() {
-        LocalDate today = LocalDate.now(ZONE);
-        LocalDateTime start = today.minusDays(6).atStartOfDay();
-        LocalDateTime end   = today.plusDays(1).atStartOfDay();
+    public List<CategoryDistriDto> getCategoryDistribution(Period period) {
+        DateRange dateRange = rangeOf(period);
 
-        var rows = summaryRepository.countByCategory(start, end);
+        var rows = summaryRepository.countByCategory(dateRange.start, dateRange.end);
+
         long total = Math.max(
-                rows.stream()
-                        .mapToLong(SummaryRepository.CategoryCount::getCnt)
-                        .sum(),
+                rows.stream().mapToLong(SummaryRepository.CategoryCount::getCnt).sum(),
                 1
         );
 
         return rows.stream()
                 .sorted(Comparator.comparingLong(SummaryRepository.CategoryCount::getCnt).reversed())
                 .map(p -> new CategoryDistriDto(
+                        period,
                         p.getCategory(),
                         p.getCategory().getDescription(),
                         Math.round(p.getCnt() * 10000.0 / total) / 100.0
